@@ -2,7 +2,6 @@
 #include "../include/module_registry.h"
 #include <dxgi1_2.h>
 #include <windows.h>
-#include <cmath>
 #include <string>
 #include <vector>
 #include <stdexcept>
@@ -164,10 +163,11 @@ void register_module() {
     module_registry::registerModule("gpu", [](Interpreter& interp) {
                     auto parse_index = [&interp](const Value& value, const std::string& name) -> int {
                         double raw = interp.expectNumber(value, name + " expects adapter index number");
-                        if (std::floor(raw) != raw) {
+                        int idx = static_cast<int>(raw);
+                        if (raw != static_cast<double>(idx)) {
                             throw std::runtime_error(name + " expects integer index");
                         }
-                        return static_cast<int>(raw);
+                        return idx;
                     };
                     interp.registerModuleFunction("gpu", "adapter_count", [&interp](const std::vector<Value>& args) -> Value {
                         interp.expectArity(args, 0, "gpu.adapter_count");
