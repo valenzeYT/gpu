@@ -22,7 +22,6 @@ IDXGIFactory1* create_factory() {
     }
     IDXGIFactory1* factory = nullptr;
     if (FAILED(fn(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&factory)))) {
-        FreeLibrary(dxgi);
         return nullptr;
     }
     return factory;
