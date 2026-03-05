@@ -9,10 +9,29 @@
 
 namespace gpu_lib {
 namespace {
+using CreateDXGIFactory1Fn = HRESULT (WINAPI*)(REFIID, void**);
+
+IDXGIFactory1* create_factory() {
+    static HMODULE dxgi = LoadLibraryA("dxgi.dll");
+    if (!dxgi) {
+        return nullptr;
+    }
+    auto fn = reinterpret_cast<CreateDXGIFactory1Fn>(GetProcAddress(dxgi, "CreateDXGIFactory1"));
+    if (!fn) {
+        return nullptr;
+    }
+    IDXGIFactory1* factory = nullptr;
+    if (FAILED(fn(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&factory)))) {
+        FreeLibrary(dxgi);
+        return nullptr;
+    }
+    return factory;
+}
+
 std::vector<IDXGIAdapter1*> enumerate_adapters() {
     std::vector<IDXGIAdapter1*> adapters;
-    IDXGIFactory1* factory = nullptr;
-    if (FAILED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&factory)))) {
+    IDXGIFactory1* factory = create_factory();
+    if (!factory) {
         return adapters;
     }
 
